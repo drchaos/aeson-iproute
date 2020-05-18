@@ -9,7 +9,6 @@ import Control.Applicative (pure)
 
 import           Data.Aeson
 import           Data.Aeson.Types
-import           Data.Aeson.Internal
 import qualified Data.HashMap.Strict as HashMap
 import           Data.IP
 import           Data.IP.RouteTable (Routable, IPRTable)
@@ -126,7 +125,7 @@ instance ( FromJSONKey k
                                               <*> p v <?> Key k
                                               <*> rt)
                 (pure RouteTable.empty)
-        _ -> fail "using IPRTable in this context is not yet supported"
+        _ -> const $ fail "using IPRTable in this context is not yet supported"
 
 instance ( FromJSONKey k
          , Read (AddrRange k)
@@ -140,7 +139,7 @@ instance (Routable k, Show k, ToJSON k) => ToJSON1 (IPRTable k) where
         ToJSONKeyText f _ -> Object . HashMap.fromList
                                     . map (\(k, v) -> (f k, g v))
                                     . RouteTable.toList
-        _ -> fail "using IPRTable as a JSON key is not yet supported"
+        _ -> errorWithoutStackTrace "using IPRTable as a JSON key is not yet supported"
 
 instance (Routable k, Show k, ToJSON k, ToJSON v) => ToJSON (IPRTable k v) where
     toJSON = toJSON1
